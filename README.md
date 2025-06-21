@@ -1,43 +1,6 @@
 # Programming-Capstone-University-of-MI-Ann-Arbor
 Capstone: Retrieving, Processing, and Visualizing Data with Python University of Michigan
 PageRank Capstone – Project Process Summary
-As part of this capstone, I developed and executed a simplified version of a search engine indexing system using Python. The project involved three primary stages: crawling a subset of the web, analyzing link structure through PageRank, and visualizing the resulting network graph using D3.js. The entire system was implemented with a focus on modularity, persistence, and interpretability of results.
-
-Crawling and Data Collection
-I began by configuring and running a lightweight web crawler based on the code provided in pagerank.zip. The crawler is designed to systematically retrieve web pages starting from a seed URL. For each page fetched, it parses all anchor tags, extracts the linked URLs, and stores both the page content and link relationships in a local SQLite database.
-
-The crawling logic follows a breadth-first traversal, queueing unretrieved URLs and marking each as processed after retrieval. I chose to limit the crawl to a single domain or subdomain to maintain scope control and data integrity. Additionally, the system is designed to avoid redundant retrievals and allows for restarts without data loss, enabling long-running or staged crawling sessions.
-
-Link Analysis and PageRank Computation
-Once a sufficient number of pages were collected, I initiated the PageRank calculation process. The underlying database schema maintains normalized tables of URLs and their interlinking structure, which serve as the basis for the iterative ranking algorithm.
-
-The PageRank model assigns an initial rank (typically 1.0) to each page, then updates those values over successive iterations based on inbound link contributions. Pages with higher inbound links from already well-ranked sources progressively receive higher PageRank scores. The algorithm continues until the ranks converge to stable values, capturing a relative importance metric across the network.
-
-This component of the system operates entirely on local data and is computationally lightweight. It can be reset or rerun multiple times, which proved useful during validation and tuning.
-
-Visualization
-For network visualization, I used the spjson.py script to export the top-ranked pages and their link relationships into a JSON structure compatible with D3.js. The accompanying HTML and JavaScript template renders a force-directed graph where node size correlates with PageRank. This interactive visualization provides an intuitive overview of the connectivity and relative authority of the pages within the crawled set.
-
-The output effectively demonstrates the emergence of central nodes and link clusters, reflecting the underlying structure of the crawled web segment.
-
-Conclusion
-This capstone project highlights the end-to-end workflow of a basic search engine backend: from data acquisition through web crawling, to index analysis via PageRank, and final visualization using modern web technologies. While the implementation is intentionally minimalistic compared to production-grade systems, it captures the essential principles of search infrastructure, link analysis, and graph-based ranking in a reproducible and extensible form.
-
-Let me know if you’d like this adapted into a resume bullet, case study, or slide deck format.
-
-
-
-
-
-
-
-
-You said:
-more-so case study please, since you ask.
-
-
-ChatGPT said:
-Great. Here is a formal case study version of your PageRank Capstone project, suitable for inclusion in a portfolio, technical presentation, or documentation for prospective collaborators or employers:
 
 🗂 Case Study: PageRank Capstone – Web Crawling, Link Analysis, and Network Visualization
 Project Overview
