@@ -1,71 +1,153 @@
-# Programming-Capstone-University-of-MI-Ann-Arbor
-Capstone: Retrieving, Processing, and Visualizing Data with Python University of Michigan
-PageRank Capstone – Project Process Summary
+import sqlite3
+import urllib.error
+import ssl
+from urllib.parse import urljoin
+from urllib.parse import urlparse
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+#For VS code, I had to import collections to gather the html, as they were not being retrieved, even with bs4 imported and installed correctly.
+import collections
 
-🗂 Case Study: PageRank Capstone – Web Crawling, Link Analysis, and Network Visualization
-Project Overview
-This project aimed to implement a streamlined version of a search engine backend, replicating the core functionalities of web crawling, index building, and ranking through link analysis. Using a custom Python-based crawler and a SQLite backend, I created a local web index that served as the foundation for computing PageRank values and visualizing page relationships via D3.js.
+collections.Callable = collections.abc.Callable
 
-The capstone project was completed using code provided in pagerank.zip, which I extended and operated across several stages to explore network behavior at small scale and reinforce concepts in graph theory, data mining, and visual analytics.
+# Ignore SSL certificate errors
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
-Objectives: 
-Build a persistent web crawler capable of navigating and storing web content from a given starting URL.
+conn = sqlite3.connect('spider.sqlite')
+cur = conn.cursor()
 
-Construct a link graph representing the structure of the crawled domain.
+cur.execute('''CREATE TABLE IF NOT EXISTS Pages
+    (id INTEGER PRIMARY KEY, url TEXT UNIQUE, html TEXT,
+     error INTEGER, old_rank REAL, new_rank REAL)''')
 
-Apply the PageRank algorithm to evaluate page importance based on link structure.
+cur.execute('''CREATE TABLE IF NOT EXISTS Links
+    (from_id INTEGER, to_id INTEGER, UNIQUE(from_id, to_id))''')
 
-Export and visualize the resulting network with attention to node centrality and connectivity.
+cur.execute('''CREATE TABLE IF NOT EXISTS Webs (url TEXT UNIQUE)''')
 
-Technical Implementation
-1. Crawling & Storage Layer
-The initial phase involved configuring a crawler (spider.py) to traverse and collect content from a web domain (e.g., dr-chuck.com or a portion of Wikipedia). Each retrieved page was parsed for outbound links, and all URL relationships were logged into a SQLite database. The architecture supports resumable crawling sessions and avoids redundant page retrievals.
+# Check to see if we are already in progress...
+cur.execute('SELECT id,url FROM Pages WHERE html is NULL and error is NULL ORDER BY RANDOM() LIMIT 1')
+row = cur.fetchone()
+if row is not None:
+    print("Restarting existing crawl.  Remove spider.sqlite to start a fresh crawl.")
+else :
+    starturl = input('Enter web url or enter: ')
+    if ( len(starturl) < 1 ) : starturl = 'http://www.dr-chuck.com/'
+    if ( starturl.endswith('/') ) : starturl = starturl[:-1]
+    web = starturl
+    if ( starturl.endswith('.htm') or starturl.endswith('.html') ) :
+        pos = starturl.rfind('/')
+        web = starturl[:pos]
 
-Key design considerations:
+    if ( len(web) > 1 ) :
+        cur.execute('INSERT OR IGNORE INTO Webs (url) VALUES ( ? )', ( web, ) )
+        cur.execute('INSERT OR IGNORE INTO Pages (url, html, new_rank) VALUES ( ?, NULL, 1.0 )', ( starturl, ) )
+        conn.commit()
 
-Persistent queueing of unretrieved links.
+# Get the current webs
+cur.execute('''SELECT url FROM Webs''')
+webs = list()
+for row in cur:
+    webs.append(str(row[0]))
 
-Page deduplication and retrieval status tracking.
+print(webs)
 
-Respect for crawl boundaries to prevent uncontrolled data expansion.
+many = 0
+while True:
+    if ( many < 1 ) :
+        sval = input('How many pages:')
+        if ( len(sval) < 1 ) : break
+        many = int(sval)
+    many = many - 1
 
-2. Link Graph Analysis & PageRank
-Following data acquisition, I used sprank.py to compute PageRank scores for all indexed pages. The algorithm iteratively distributes rank values based on the number and quality of inbound links, with convergence reached after multiple passes over the dataset.
+    cur.execute('SELECT id,url FROM Pages WHERE html is NULL and error is NULL ORDER BY RANDOM() LIMIT 1')
+    try:
+        row = cur.fetchone()
+        # print row
+        fromid = row[0]
+        url = row[1]
+    except:
+        print('No unretrieved HTML pages found')
+        many = 0
+        break
 
-This process mirrors the importance propagation mechanism used in real-world search engines, albeit on a much smaller scale and with simplified damping and edge-weight handling.
+    print(fromid, url, end=' ')
 
-Features:
+    # If we are retrieving this page, there should be no links from it
+    cur.execute('DELETE from Links WHERE from_id=?', (fromid, ) )
+    try:
+        document = urlopen(url, context=ctx)
 
-Adjustable iteration depth for convergence tuning.
+        html = document.read()
+        if document.getcode() != 200 :
+            print("Error on page: ",document.getcode())
+            cur.execute('UPDATE Pages SET error=? WHERE url=?', (document.getcode(), url) )
 
-Reset functionality to restart ranking from uniform distribution.
+        if 'text/html' != document.info().get_content_type() :
+            print("Ignore non text/html page")
+            cur.execute('DELETE FROM Pages WHERE url=?', ( url, ) )
+            conn.commit()
+            continue
 
-Efficient in-memory operations due to local data access.
+        print('('+str(len(html))+')', end=' ')
 
-3. Visualization of Link Topology
-To interpret the final PageRank scores and link network, I exported the top-ranking pages and their links to JSON using spjson.py. This data was rendered with a D3.js-based force.html visualization, which presented a dynamic graph of the network.
+        soup = BeautifulSoup(html, "html.parser")
+    except KeyboardInterrupt:
+        print('')
+        print('Program interrupted by user...')
+        break
+    except:
+        print("Unable to retrieve or parse page")
+        cur.execute('UPDATE Pages SET error=-1 WHERE url=?', (url, ) )
+        conn.commit()
+        continue
 
-Visualization insights:
+    cur.execute('INSERT OR IGNORE INTO Pages (url, html, new_rank) VALUES ( ?, NULL, 1.0 )', ( url, ) )
+    cur.execute('UPDATE Pages SET html=? WHERE url=?', (memoryview(html), url ) )
+    conn.commit()
 
-Node size represented PageRank magnitude.
+    # Retrieve all of the anchor tags
+    tags = soup('a')
+    count = 0
+    for tag in tags:
+        href = tag.get('href', None)
+        if ( href is None ) : continue
+        # Resolve relative references like href="/contact"
+        up = urlparse(href)
+        if ( len(up.scheme) < 1 ) :
+            href = urljoin(url, href)
+        ipos = href.find('#')
+        if ( ipos > 1 ) : href = href[:ipos]
+        if ( href.endswith('.png') or href.endswith('.jpg') or href.endswith('.gif') ) : continue
+        if ( href.endswith('/') ) : href = href[:-1]
+        # print href
+        if ( len(href) < 1 ) : continue
 
-Link directionality depicted navigational structure.
+		# Check if the URL is in any of the webs
+        found = False
+        for web in webs:
+            if ( href.startswith(web) ) :
+                found = True
+                break
+        if not found : continue
 
-Drag-and-drop interaction enhanced exploratory analysis.
+        cur.execute('INSERT OR IGNORE INTO Pages (url, html, new_rank) VALUES ( ?, NULL, 1.0 )', ( href, ) )
+        count = count + 1
+        conn.commit()
 
-Results
-The project successfully replicated a minimal search engine pipeline from crawl to rank to visualization. The D3.js output clearly illustrated central nodes with high inbound influence and peripheral nodes with minimal connectivity. Link density and circular paths became apparent as the crawler explored denser sites such as Wikipedia.
+        cur.execute('SELECT id FROM Pages WHERE url=? LIMIT 1', ( href, ))
+        try:
+            row = cur.fetchone()
+            toid = row[0]
+        except:
+            print('Could not retrieve id')
+            continue
+        # print fromid, toid
+        cur.execute('INSERT OR IGNORE INTO Links (from_id, to_id) VALUES ( ?, ? )', ( fromid, toid ) )
 
-The PageRank algorithm demonstrated convergence behavior after approximately 20–30 iterations on sample datasets. Repeated runs confirmed stability and reproducibility of the computed ranks.
 
-Tools & Technologies
-Python: core implementation, parsing, and logic.
+    print(count)
 
-SQLite: persistent storage of page and link data.
-
-D3.js: force-directed graph visualization.
-
-HTML/JS: front-end rendering for interactive output.
-
-Reflections
-This project deepened my understanding of search engine architecture, data graph modeling, and the use of algorithms like PageRank for value attribution in networks. While scaled down, the system emulates real-world crawling and ranking logic, providing a strong foundation for further exploration into large-scale data mining, graph analytics, or distributed crawling systems.
+cur.close()
