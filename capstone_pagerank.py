@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 import collections
 
 collections.Callable = collections.abc.Callable
-
-# Ignore SSL certificate errors
+#This is the end of my extension, so I can make collections callable, and we are then able to retrieve HTML's from any link.
+#Always Ignore SSL certificate errors
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
@@ -151,3 +151,4 @@ while True:
     print(count)
 
 cur.close()
+# From here it will be asking for the html we want to parse, or retrieve from, and then we'll let it know how many pages we wish to sift through.
