@@ -8,7 +8,7 @@ This project aimed to implement a streamlined version of a search engine backend
 
 The capstone project was completed using code provided in pagerank.zip, which I extended and operated across several stages to explore network behavior at small scale and reinforce concepts in graph theory, data mining, and visual analytics.
 
-Objectives
+Objectives: 
 Build a persistent web crawler capable of navigating and storing web content from a given starting URL.
 
 Construct a link graph representing the structure of the crawled domain.
