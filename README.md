@@ -4,7 +4,8 @@ Capstone: Retrieving, Processing, and Visualizing Data with Python University of
 
 The capstone project was completed using code provided in pagerank.zip, which I extended and operated across several stages to explore network behavior at small scale and reinforce concepts in graph theory, data mining, and visual analytics.
 
-Objectives Build a persistent web crawler capable of navigating and storing web content from a given starting URL.
+Objectives:
+Build a persistent web crawler capable of navigating and storing web content from a given starting URL.
 
 Construct a link graph representing the structure of the crawled domain.
 
@@ -12,7 +13,7 @@ Apply the PageRank algorithm to evaluate page importance based on link structure
 
 Export and visualize the resulting network with attention to node centrality and connectivity.
 
-Technical Implementation
+Technical Implementation:
 
 Crawling & Storage Layer The initial phase involved configuring a crawler (spider.py) to traverse and collect content from a web domain (e.g., dr-chuck.com or a portion of Wikipedia). Each retrieved page was parsed for outbound links, and all URL relationships were logged into a SQLite database. The architecture supports resumable crawling sessions and avoids redundant page retrievals.
 Key design considerations:
