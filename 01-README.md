@@ -91,4 +91,4 @@ Assuming the role of a search engine like Google, I proceed to execute python3 s
 After completing the crawl, I exit and refresh the data view to inspect the updated new ranks, verifying the impact of the additional pages on the overall distribution.
 ________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-Sprank.py Stage Notes:
+SPJson and SPdumping Stage Notes:
