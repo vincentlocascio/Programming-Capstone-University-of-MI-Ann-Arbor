@@ -78,3 +78,17 @@ Reflections:
 
 
  This project deepened my understanding of search engine architecture, data graph modeling, and the use of algorithms like PageRank for value attribution in networks. While scaled down, the system emulates real-world crawling and ranking logic, providing a strong foundation for further exploration into large-scale data mining, graph analytics, or distributed crawling systems.
+
+
+________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Sprank.py Stage Notes:
+
+After running 12 iterations, I observe that the difference between the old and new page ranks has significantly decreased. This reduction is due to the convergence of the ranks, where the average difference now falls below 0.005. To illustrate this stabilization more clearly, I decide to execute one additional iteration. Upon doing so, I confirm that the rank values are beginning to stabilize.
+
+Assuming the role of a search engine like Google, I proceed to execute python3 spider.py to simulate ranking behavior on an extended dataset. I opt to crawl ten additional pages, expecting that these newly introduced pages will initially be assigned a default page rank of 1.
+
+After completing the crawl, I exit and refresh the data view to inspect the updated new ranks, verifying the impact of the additional pages on the overall distribution.
+________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Sprank.py Stage Notes:
