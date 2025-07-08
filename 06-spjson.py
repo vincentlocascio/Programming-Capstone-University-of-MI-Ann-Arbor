@@ -58,4 +58,5 @@ fhand.write(']};')
 fhand.close()
 cur.close()
 
+#This is just to let the user know to head over to where the Visual was made, which is within the force.html!
 print("Open force.html in a browser to view the visualization")
