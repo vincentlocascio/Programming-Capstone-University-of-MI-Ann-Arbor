@@ -1,6 +1,8 @@
 Capstone: Retrieving, Processing, and Visualizing Data with Python University of Michigan PageRank Capstone – Project Process Summary
 
-🗂 Case Study: PageRank Capstone – Web Crawling, Link Analysis, and Network Visualization Project Overview This project aimed to implement a streamlined version of a search engine backend, replicating the core functionalities of web crawling, index building, and ranking through link analysis. Using a custom Python-based crawler and a SQLite backend, I created a local web index that served as the foundation for computing PageRank values and visualizing page relationships via D3.js.
+🗂 Case Study: PageRank Capstone – Web Crawling, Link Analysis, and Network Visualization Project Overview 
+
+This project aimed to implement a streamlined version of a search engine backend, replicating the core functionalities of web crawling, index building, and ranking through link analysis. Using a custom Python-based crawler and a SQLite backend, I created a local web index that served as the foundation for computing PageRank values and visualizing page relationships via D3.js.
 
 The capstone project was completed using code provided in pagerank.zip, which I extended and operated across several stages to explore network behavior at small scale and reinforce concepts in graph theory, data mining, and visual analytics.
 
